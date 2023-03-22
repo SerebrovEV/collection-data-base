@@ -1,40 +1,28 @@
 package com.digdes.school;
 
 import java.util.*;
+import java.util.regex.Matcher;
+
 
 public class JavaSchoolStarter {
     public JavaSchoolStarter() {
     }
 
-    //Map = id lastName age cost active
-
-    private final String id = "id";
-    private final String lastName = "lastname";
-    private final String age = "age";
-    private final String cost = "cost";
-    private final String active = "active";
-    private final String where = "where";
-
     private ArrayList<Map<String, Object>> dataBase;
 
-    private String clearWord(String word) {
-        return word.substring(word.indexOf("=") + 1).replaceAll("'| ", "");
-    }
 
     public List<Map<String, Object>> execute(String request) throws Exception {
 
-        String[] question = request.split(",");
-        String command = question[0].toLowerCase();
-        if (command.startsWith("insert")) {
-            System.out.println(Arrays.toString(question));
-            List<Map<String, Object>> newList = addRow(question);
-            return newList;
-        } else if (command.startsWith("update")) {
-            System.out.println(Arrays.toString(question));
-        } else if (command.startsWith("delete")) {
-            System.out.println(Arrays.toString(question));
-        } else if (command.startsWith("select")) {
-            System.out.println(Arrays.toString(question));
+        if (request.toLowerCase().startsWith(Constant.INSERT)){
+            System.out.println(request);
+            return addRow(request);
+        } else if (request.toLowerCase().startsWith(Constant.UPDATE)) {
+            System.out.println(request);
+        } else if (request.toLowerCase().startsWith(Constant.DELETE)) {
+            System.out.println(request);
+            deleteRow(request);
+        } else if (request.toLowerCase().startsWith(Constant.SELECT)) {
+            System.out.println(request);
         } else {
             throw new IllegalArgumentException();
         }
@@ -47,34 +35,32 @@ public class JavaSchoolStarter {
      * @param
      * @return
      */
-    private List<Map<String, Object>> addRow(String[] sentence) {
+    private List<Map<String, Object>> addRow(String sentence) {
         Map<String, Object> newRow = new HashMap<>();
-
         //   System.out.println(Arrays.toString(sentence));
-
-        for (String str : sentence) {
-            if (str.toLowerCase().contains(id)) {
+        for (String str : sentence.split(",")) {
+            if (str.toLowerCase().contains(Constant.ID)) {
                 System.out.println(str);
-                newRow.put(id, Long.valueOf(clearWord(str)));
+                newRow.put(Constant.ID, Long.valueOf(clearWord(str)));
                 continue;
             }
-            if (str.toLowerCase().contains(lastName)) {
+            if (str.toLowerCase().contains(Constant.LAST_NAME)) {
                 System.out.println(str);
                 newRow.put("lastName", clearWord(str));
                 continue;
             }
-            if (str.toLowerCase().contains(age)) {
-                newRow.put(age, Long.valueOf(clearWord(str)));
+            if (str.toLowerCase().contains(Constant.AGE)) {
+                newRow.put(Constant.AGE, Long.valueOf(clearWord(str)));
                 System.out.println(str);
                 continue;
             }
-            if (str.toLowerCase().contains(cost)) {
-                newRow.put(cost, Double.valueOf(clearWord(str)));
+            if (str.toLowerCase().contains(Constant.COST)) {
+                newRow.put(Constant.COST, Double.valueOf(clearWord(str)));
                 System.out.println(str);
                 continue;
             }
-            if (str.toLowerCase().contains(active)) {
-                newRow.put(active, Boolean.valueOf(clearWord(str)));
+            if (str.toLowerCase().contains(Constant.ACTIVE)) {
+                newRow.put(Constant.ACTIVE, Boolean.valueOf(clearWord(str)));
                 System.out.println(str);
             } else throw new IllegalArgumentException();
         }
@@ -82,26 +68,35 @@ public class JavaSchoolStarter {
         return List.of(newRow);
     }
 
-    private List<Map<String, Object>> updateRow(String[] sentence) {
-        System.out.println(Arrays.toString(sentence));
+    private List<Map<String, Object>> updateRow(String sentence) {
+        System.out.println(sentence);
         return dataBase;
     }
 
-    private List<Map<String, Object>> selectRow(String[] sentence) {
+    private List<Map<String, Object>> selectRow(String sentence) {
         return dataBase;
     }
 
-    private List<Map<String, Object>> deleteRow(String[] sentence) {
+    private List<Map<String, Object>> deleteRow(String sentence) {
         Map<String, Object> newRow = new HashMap<>();
-        for (String word : sentence) {
-            if (word.toLowerCase().startsWith(where)) {
-
+        String[] str = sentence.split("where");
+        String[] param = Constant.AND.split(str[1]);
+        Matcher matcher;
+        for (String par : param) {
+            System.out.println(par.replace(" ", ""));
+            matcher = Constant.OPERATION.matcher(par.replace(" ", ""));
+            if (matcher.find()) {
+                System.out.println(matcher.group(1));
+                System.out.println(matcher.group(2));
+                System.out.println(matcher.group(3));
             }
         }
         return List.of(newRow);
     }
 
-    private String getSymbol (String )
+    private String clearWord(String word) {
+        return word.substring(word.indexOf("=") + 1).replaceAll("'| ", "");
+    }
 
 }
 //.
