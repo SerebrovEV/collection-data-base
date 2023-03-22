@@ -9,7 +9,7 @@ public class Main {
 
         JavaSchoolStarter starter = new JavaSchoolStarter();
         List<String> commands = List.of(
-                "INSERT VALUES 'lastName' = 'Федоров' , 'id'=3, 'age'=40, 'active'=true",
+                "INSERT VALUES 'LastName' = ' Федоров' , 'id'=    3, 'age'= 40, 'active'= true",
                 "UPDATE VALUES 'active'=false, 'cost'=10.1 where 'id'=3",
                 "UPdATE VALUES 'active'=false, 'cost'=10.1 where 'id'=3",
                 "Delete VALUES 'active'=false, 'cost'=10.1 where 'id'=3",
@@ -17,13 +17,13 @@ public class Main {
         try {
 
             for (String str : commands) {
-                starter.execute(str);
+                System.out.println(starter.execute(str));
+                //    System.out.println(starter.execute("INSERT VALUES 'LastName' = 'Федоров' , 'id'=    3, 'age'= 40, 'active'= true"));
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
-            System.out.println("Done");
         }
+
 
     }
 }
