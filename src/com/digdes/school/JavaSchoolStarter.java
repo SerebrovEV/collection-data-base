@@ -9,7 +9,7 @@ public class JavaSchoolStarter {
     public JavaSchoolStarter() {
     }
 
-    private ArrayList<Map<String, Object>> dataBase;
+    private final ArrayList<Map<String, Object>> dataBase = new ArrayList<>();
 
 
     public List<Map<String, Object>> execute(String request) throws Exception {
@@ -65,7 +65,7 @@ public class JavaSchoolStarter {
                 System.out.println(str);
             } else throw new IllegalArgumentException();
         }
-
+        dataBase.add(newRow);
         return List.of(newRow);
     }
 
@@ -84,8 +84,8 @@ public class JavaSchoolStarter {
         paramOperation(str[1]);
         String[] param = Constant.AND.split(str[1]);
         for (String par : param) {
-           String[] dataOperation = paramOperation(par);
-            dataBase.stream().filter((s)-> s.get(dataOperation[1]).equals()).collect(Collectors.toList());
+            String[] dataOperation = paramOperation(par);
+
         }
         return List.of(newRow);
     }
@@ -107,6 +107,48 @@ public class JavaSchoolStarter {
             }
         }
         return data;
+    }
+
+    private boolean filter(String[] strs, Object obj) {
+        switch (strs[2]) {
+            case "=" -> {
+                return strs[2] == obj;
+            }
+
+            case "!=" -> {
+                return strs[2] != obj;
+            }
+
+            case "like" -> {
+                return strs[2].equals(obj.toString());
+            }
+            case "ilike" -> {
+                return strs[2].equalsIgnoreCase(obj.toString());
+            }
+            case ">=" -> {
+                if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
+                    return Double.parseDouble(strs[2]) >= (Double) obj;
+
+                }
+            }
+            case "<=" -> {
+                if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
+                    return Double.parseDouble(strs[2]) >= (Double) obj;
+                }
+            }
+            case "<" -> {
+                if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
+                    return Double.parseDouble(strs[2]) >= (Double) obj;
+                }
+            }
+            case ">" -> {
+                if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
+                    return Double.parseDouble(strs[2]) >= (Double) obj;
+                }
+            }
+            default ->   throw new RuntimeException();
+        }
+        return false;
     }
 
 }
