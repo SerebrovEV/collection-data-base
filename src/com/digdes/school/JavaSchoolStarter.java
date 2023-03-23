@@ -80,14 +80,16 @@ public class JavaSchoolStarter {
 
     private List<Map<String, Object>> deleteRow(String sentence) {
         Map<String, Object> newRow = new HashMap<>();
+        List<Map<String, Object>> newList = new ArrayList<>();
         String[] str = sentence.split("where");
         paramOperation(str[1]);
         String[] param = Constant.AND.split(str[1]);
         for (String par : param) {
             String[] dataOperation = paramOperation(par);
-
+            newList = dataBase.stream().filter(s -> filter(dataOperation, s)).toList();
+            System.out.println(newList);
         }
-        return List.of(newRow);
+        return newList;
     }
 
     private String clearWord(String word) {
@@ -109,46 +111,46 @@ public class JavaSchoolStarter {
         return data;
     }
 
-    private boolean filter(String[] strs, Object obj) {
+    private boolean filter(String[] strs, Map<String, Object> maps) {
+        boolean result = false;
         switch (strs[2]) {
             case "=" -> {
-                return strs[2] == obj;
+                result = strs[2] == maps.get(strs[1]);
             }
 
             case "!=" -> {
-                return strs[2] != obj;
+                result = strs[2] != maps.get(strs[1]);
             }
 
             case "like" -> {
-                return strs[2].equals(obj.toString());
+                result = strs[2].equals(maps.get(strs[1]).toString());
             }
             case "ilike" -> {
-                return strs[2].equalsIgnoreCase(obj.toString());
+                result = strs[2].equalsIgnoreCase(maps.get(strs[1]).toString());
             }
             case ">=" -> {
                 if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
-                    return Double.parseDouble(strs[2]) >= (Double) obj;
+                    result = Double.parseDouble(strs[2]) >= (Double) maps.get(strs[1]);
 
                 }
             }
             case "<=" -> {
                 if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
-                    return Double.parseDouble(strs[2]) >= (Double) obj;
+                    result = Double.parseDouble(strs[2]) >= (Double) maps.get(strs[1]);
                 }
             }
             case "<" -> {
                 if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
-                    return Double.parseDouble(strs[2]) >= (Double) obj;
+                    result = Double.parseDouble(strs[2]) >= (Double) maps.get(strs[1]);
                 }
             }
             case ">" -> {
                 if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
-                    return Double.parseDouble(strs[2]) >= (Double) obj;
+                    result = Double.parseDouble(strs[2]) >= (Double) maps.get(strs[1]);
                 }
             }
-            default ->   throw new RuntimeException();
         }
-        return false;
+        return result;
     }
 
 }
