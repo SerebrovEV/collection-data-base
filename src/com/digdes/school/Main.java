@@ -12,8 +12,8 @@ public class Main {
                 "INSERT VALUES 'LastName' = ' Федоров' , 'id'= 3, 'age'= 40, 'active'= true",
                 //  "UPDATE VALUES 'active'=false, 'cost'=10.1 where 'id'=3",
                 //   "UPdATE VALUES 'active'=false, 'cost'=10.1 where 'id'=3",
-                "Delete VALUES 'active'=false, 'cost'=10.1 where 'id'=3 and 'name' =   10"
-                // "Select VALUES 'active'=false, 'cost'=10.1 where 'id'=3"
+                "Delete where 'id' != 3 and 'name' > 10"
+                // "Select where 'id'=3"
         );
         try {
 

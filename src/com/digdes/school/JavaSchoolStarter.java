@@ -2,6 +2,7 @@ package com.digdes.school;
 
 import java.util.*;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 
 public class JavaSchoolStarter {
@@ -13,7 +14,7 @@ public class JavaSchoolStarter {
 
     public List<Map<String, Object>> execute(String request) throws Exception {
 
-        if (request.toLowerCase().startsWith(Constant.INSERT)){
+        if (request.toLowerCase().startsWith(Constant.INSERT)) {
             System.out.println(request);
             return addRow(request);
         } else if (request.toLowerCase().startsWith(Constant.UPDATE)) {
@@ -80,22 +81,32 @@ public class JavaSchoolStarter {
     private List<Map<String, Object>> deleteRow(String sentence) {
         Map<String, Object> newRow = new HashMap<>();
         String[] str = sentence.split("where");
+        paramOperation(str[1]);
         String[] param = Constant.AND.split(str[1]);
-        Matcher matcher;
         for (String par : param) {
-            System.out.println(par.replace(" ", ""));
-            matcher = Constant.OPERATION.matcher(par.replace(" ", ""));
-            if (matcher.find()) {
-                System.out.println(matcher.group(1));
-                System.out.println(matcher.group(2));
-                System.out.println(matcher.group(3));
-            }
+           String[] dataOperation = paramOperation(par);
+            dataBase.stream().filter((s)-> s.get(dataOperation[1]).equals()).collect(Collectors.toList());
         }
         return List.of(newRow);
     }
 
     private String clearWord(String word) {
         return word.substring(word.indexOf("=") + 1).replaceAll("'| ", "");
+    }
+
+    private String[] paramOperation(String operation) {
+        System.out.println(operation.replace(" ", ""));
+        String[] data = new String[3];
+        Matcher matcher = Constant.OPERATION.matcher(operation.replace(" ", ""));
+        if (matcher.find()) {
+            System.out.println(matcher.group(1));
+            System.out.println(matcher.group(2));
+            System.out.println(matcher.group(3));
+            for (int i = 0; i < 3; i++) {
+                data[i] = matcher.group(i);
+            }
+        }
+        return data;
     }
 
 }

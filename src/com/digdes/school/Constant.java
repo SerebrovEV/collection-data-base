@@ -13,7 +13,7 @@ public class Constant {
     public static  final String UPDATE = "update values";
     public static  final String DELETE = "delete";
     public static  final String SELECT = "select";
-    public static  final Pattern OPERATION = Pattern.compile("'([\\w]+)'(\\W)([\\S]+)");
+    public static  final Pattern OPERATION = Pattern.compile("'([\\w]+)'(\\W+)([\\S]+)");
     public static  final Pattern AND = Pattern.compile("and");
     public static  final Pattern OR = Pattern.compile("or");
 }
