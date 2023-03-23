@@ -19,7 +19,7 @@ public class Main {
                 "INSERT VALUES 'LastName' = ' Федоровdfs' , 'id'= 37, 'age'= 430, 'active'= true",
                 //  "UPDATE VALUES 'active'=false, 'cost'=10.1 where 'id'=3",
                 //   "UPdATE VALUES 'active'=false, 'cost'=10.1 where 'id'=3",
-                "Delete where 'id' != 3 and 'name' > 10"
+                "Delete where 'id' = 3"
                 // "Select where 'id'=3"
         );
         try {
