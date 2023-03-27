@@ -2,10 +2,10 @@ package com.digdes.school;
 
 import java.util.*;
 import java.util.regex.Matcher;
-import java.util.stream.Collectors;
 
 
 public class JavaSchoolStarter {
+
     public JavaSchoolStarter() {
     }
 
@@ -21,7 +21,7 @@ public class JavaSchoolStarter {
             System.out.println(request);
         } else if (request.toLowerCase().startsWith(Constant.DELETE)) {
             System.out.println(request);
-            deleteRow(request);
+            return deleteRow(request);
         } else if (request.toLowerCase().startsWith(Constant.SELECT)) {
             System.out.println(request);
         } else {
@@ -38,31 +38,30 @@ public class JavaSchoolStarter {
      */
     private List<Map<String, Object>> addRow(String sentence) {
         Map<String, Object> newRow = new HashMap<>();
-        //   System.out.println(Arrays.toString(sentence));
         for (String str : sentence.split(",")) {
             if (str.toLowerCase().contains(Constant.ID)) {
-                System.out.println(str);
+            //    System.out.println(str);
                 newRow.put(Constant.ID, Long.valueOf(clearWord(str)));
                 continue;
             }
             if (str.toLowerCase().contains(Constant.LAST_NAME)) {
-                System.out.println(str);
+             //   System.out.println(str);
                 newRow.put("lastName", clearWord(str));
                 continue;
             }
             if (str.toLowerCase().contains(Constant.AGE)) {
                 newRow.put(Constant.AGE, Long.valueOf(clearWord(str)));
-                System.out.println(str);
+             //   System.out.println(str);
                 continue;
             }
             if (str.toLowerCase().contains(Constant.COST)) {
                 newRow.put(Constant.COST, Double.valueOf(clearWord(str)));
-                System.out.println(str);
+             //   System.out.println(str);
                 continue;
             }
             if (str.toLowerCase().contains(Constant.ACTIVE)) {
                 newRow.put(Constant.ACTIVE, Boolean.valueOf(clearWord(str)));
-                System.out.println(str);
+            //    System.out.println(str);
             } else throw new IllegalArgumentException();
         }
         dataBase.add(newRow);
@@ -71,25 +70,30 @@ public class JavaSchoolStarter {
 
     private List<Map<String, Object>> updateRow(String sentence) {
         System.out.println(sentence);
-        return dataBase;
+        List<Map<String, Object>> result = new ArrayList<>();
+        return result;
     }
 
     private List<Map<String, Object>> selectRow(String sentence) {
-        return dataBase;
+        List<Map<String, Object>> result = new ArrayList<>();
+        return result;
     }
 
     private List<Map<String, Object>> deleteRow(String sentence) {
-        Map<String, Object> newRow = new HashMap<>();
-        List<Map<String, Object>> newList = new ArrayList<>();
+        List<Map<String, Object>> result = new ArrayList<>();
         String[] str = sentence.split("where");
-        paramOperation(str[1]);
-        String[] param = Constant.AND.split(str[1]);
-        for (String par : param) {
-            String[] dataOperation = paramOperation(par);
-            newList = dataBase.stream().filter(s -> filter(dataOperation, s)).toList();
-            System.out.println(newList);
+        System.out.println(Arrays.toString(str));
+        String[] criterion = paramOperation(str[1]);
+        System.out.println(Arrays.toString(criterion));
+        Iterator<Map<String, Object>> dataBAseIterator = dataBase.iterator();
+        while (dataBAseIterator.hasNext()) {
+            Map<String, Object> next = dataBAseIterator.next();
+            if (filter(criterion, next)) {
+                result.add(next);
+                dataBAseIterator.remove();
+            }
         }
-        return newList;
+        return result;
     }
 
     private String clearWord(String word) {
@@ -97,64 +101,146 @@ public class JavaSchoolStarter {
     }
 
     private String[] paramOperation(String operation) {
-        System.out.println(operation.replace(" ", ""));
         String[] data = new String[3];
         Matcher matcher = Constant.OPERATION.matcher(operation.replace(" ", ""));
         if (matcher.find()) {
-            System.out.println(matcher.group(1));
-            System.out.println(matcher.group(2));
-            System.out.println(matcher.group(3));
             for (int i = 0; i < 3; i++) {
-                data[i] = matcher.group(i);
+                data[i] = matcher.group(i+1);
+                System.out.println(data[i]);
             }
+        } else {
+            throw new RuntimeException();
         }
         return data;
     }
 
     private boolean filter(String[] strs, Map<String, Object> maps) {
-        boolean result = false;
-        switch (strs[2]) {
+        switch (strs[1]) {
             case "=" -> {
-                result = strs[2] == maps.get(strs[1]);
+                System.out.println(Arrays.toString(strs));
+                return isEquals(strs, maps);
             }
 
             case "!=" -> {
-                result = strs[2] != maps.get(strs[1]);
+                return isNotEquals(strs, maps);
             }
 
             case "like" -> {
-                result = strs[2].equals(maps.get(strs[1]).toString());
+                return like(strs, maps);
             }
             case "ilike" -> {
-                result = strs[2].equalsIgnoreCase(maps.get(strs[1]).toString());
+                return iLike(strs, maps);
             }
             case ">=" -> {
-                if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
-                    result = Double.parseDouble(strs[2]) >= (Double) maps.get(strs[1]);
-
-                }
+                return greaterThanOrEqual(strs, maps);
             }
             case "<=" -> {
-                if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
-                    result = Double.parseDouble(strs[2]) >= (Double) maps.get(strs[1]);
-                }
+                return lessThanOrEqual(strs, maps);
             }
             case "<" -> {
-                if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
-                    result = Double.parseDouble(strs[2]) >= (Double) maps.get(strs[1]);
-                }
+               return less(strs, maps);
             }
             case ">" -> {
-                if (strs[1].equals(Constant.ID) || strs[1].equals(Constant.AGE) || strs[1].equals(Constant.COST)) {
-                    result = Double.parseDouble(strs[2]) >= (Double) maps.get(strs[1]);
-                }
+              return more(strs, maps);
             }
+            default -> throw new RuntimeException();
         }
-        return result;
     }
 
+    private static boolean isEquals(String[] operation, Map<String, Object> map) {
+        switch (operation[0]) {
+            case Constant.ID, Constant.AGE -> {
+                return Long.valueOf(operation[2]).equals(Long.valueOf(map.get(operation[0]).toString()));
+            }
+            case Constant.LAST_NAME -> {
+                return operation[2].equals(map.get(operation[0]).toString());
+            }
+            case Constant.COST -> {
+                return Double.valueOf(operation[2]).equals(Double.valueOf(map.get(operation[0]).toString()));
+            }
+            case Constant.ACTIVE -> {
+                return Boolean.valueOf(operation[2]).equals(Boolean.valueOf(map.get(operation[0]).toString()));
+            }
+            default -> throw new RuntimeException();
+
+        }
+    }
+
+    private static boolean isNotEquals(String[] operation, Map<String, Object> map) {
+        switch (operation[0]) {
+            case Constant.ID, Constant.AGE -> {
+                return !(Long.valueOf(operation[2]).equals(Long.valueOf(map.get(operation[0]).toString())));
+            }
+            case Constant.LAST_NAME -> {
+                return !(operation[2].equals(map.get(operation[0]).toString()));
+            }
+            case Constant.COST -> {
+                return !(Double.valueOf(operation[2]).equals(Double.valueOf(map.get(operation[0]).toString())));
+            }
+            case Constant.ACTIVE -> {
+                return !(Boolean.valueOf(operation[2]).equals(Boolean.valueOf(map.get(operation[0]).toString())));
+            }
+            default -> throw new RuntimeException();
+        }
+    }
+    private static boolean like (String[] operation, Map<String, Object> map) {
+        if (operation[0].equals(Constant.LAST_NAME)) {
+            return operation[2].equals(map.get(operation[0]).toString());
+        } else {
+            throw new RuntimeException();
+        }
+    }
+
+    private static boolean iLike (String[] operation, Map<String, Object> map) {
+        if (operation[0].equals(Constant.LAST_NAME)) {
+            return operation[2].equalsIgnoreCase(map.get(operation[0]).toString());
+        } else {
+            throw new RuntimeException();
+        }
+    }
+    private static boolean greaterThanOrEqual (String[] operation, Map<String, Object> map) {
+        switch (operation[0]) {
+            case Constant.ID, Constant.AGE -> {
+                return Long.parseLong(operation[2]) >= (Long.parseLong(map.get(operation[0]).toString()));
+            }
+            case Constant.COST -> {
+                return Double.parseDouble(operation[2]) >= Double.parseDouble(map.get(operation[0]).toString());
+            }
+            default -> throw new RuntimeException();
+        }
+    }
+
+    private static boolean lessThanOrEqual (String[] operation, Map<String, Object> map) {
+        switch (operation[0]) {
+            case Constant.ID, Constant.AGE -> {
+                return Long.parseLong(operation[2]) <= (Long.parseLong(map.get(operation[0]).toString()));
+            }
+            case Constant.COST -> {
+                return Double.parseDouble(operation[2]) <= Double.parseDouble(map.get(operation[0]).toString());
+            }
+            default -> throw new RuntimeException();
+        }
+    }
+    private static boolean less (String[] operation, Map<String, Object> map) {
+        switch (operation[0]) {
+            case Constant.ID, Constant.AGE -> {
+                return Long.parseLong(operation[2]) < (Long.parseLong(map.get(operation[0]).toString()));
+            }
+            case Constant.COST -> {
+                return Double.parseDouble(operation[2]) < Double.parseDouble(map.get(operation[0]).toString());
+            }
+            default -> throw new RuntimeException();
+        }
+    }
+    private static boolean more (String[] operation, Map<String, Object> map) {
+        switch (operation[0]) {
+            case Constant.ID, Constant.AGE -> {
+                return Long.parseLong(operation[2]) > (Long.parseLong(map.get(operation[0]).toString()));
+            }
+            case Constant.COST -> {
+                return Double.parseDouble(operation[2]) > Double.parseDouble(map.get(operation[0]).toString());
+            }
+            default -> throw new RuntimeException();
+        }
+    }
 }
-//.
-//Колонка id имеет тип Long, колонка lastName имеет тип String,
-//колонка cost имеет тип Double, колонка age имеет тип Long, колонка
-//active имеет тип Boolean
