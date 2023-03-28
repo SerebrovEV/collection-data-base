@@ -9,11 +9,18 @@ public class JavaSchoolStarter {
     public JavaSchoolStarter() {
     }
 
+    /**
+     * Коллекция с веддеными данными
+     */
     private final ArrayList<Map<String, Object>> dataBase = new ArrayList<>();
 
-
+    /**
+     * Метод для обработки входных данных и выводе результата
+     * @param request
+     * @return
+     * @throws Exception
+     */
     public List<Map<String, Object>> execute(String request) throws Exception {
-
         if (request.toLowerCase().startsWith(Constant.INSERT)) {
             return addRow(request);
         } else if (request.toLowerCase().startsWith(Constant.UPDATE)) {
@@ -23,70 +30,70 @@ public class JavaSchoolStarter {
         } else if (request.toLowerCase().startsWith(Constant.SELECT)) {
             return selectRow(request);
         } else {
-            throw new IllegalArgumentException();
+            throw new Exception("Некорректный воод команды");
         }
     }
 
     /**
-     * Command Insert
+     * Метод на добавление строки
      *
      * @param
      * @return
      */
-    private List<Map<String, Object>> addRow(String sentence) {
-        Map<String, Object> newRow = new HashMap<>();
-        newRow = addInformationToMap(sentence, newRow);
+    private List<Map<String, Object>> addRow(String request) {
+        Map<String, Object> newRow = addInformationToMap(request, new HashMap<>());
         dataBase.add(newRow);
         return List.of(newRow);
     }
 
     /**
-     * Command Update (в работе)
+     * Метод для обновления данных в строках
      *
-     * @param sentence
+     * @param request
      * @return
      */
-    private List<Map<String, Object>> updateRow(String sentence) {
+    private List<Map<String, Object>> updateRow(String request) {
         List<Map<String, Object>> result = new ArrayList<>();
-        if (sentence.toLowerCase().contains("where")) {
+        if (request.toLowerCase().contains(Constant.WHERE)) {
 
-            String[] request = sentence.split("where");
+            String[] splitRequest = request.split(Constant.WHERE);
 
-            if (request[1].toLowerCase().contains(Constant.AND)) {
+            if (splitRequest[1].toLowerCase().contains(Constant.AND)) {
 
-                String[] criterion = paramOperation(request[1].toLowerCase().split(Constant.AND)[0]);
-                String[] criterion2 = paramOperation(request[1].toLowerCase().split(Constant.AND)[1]);
+                String[] criterion = parsingOperation(splitRequest[1].split(Constant.AND)[0]);
+                String[] criterion2 = parsingOperation(splitRequest[1].split(Constant.AND)[1]);
 
                 for (int i = 0; i < dataBase.size(); i++) {
-                    if (filter(criterion, dataBase.get(i)) && filter(criterion2, dataBase.get(i))) {
-                        dataBase.set(i, addInformationToMap(request[0], dataBase.get(i)));
+                    if (logicOperation(criterion, dataBase.get(i)) && logicOperation(criterion2, dataBase.get(i))) {
+                        dataBase.set(i, addInformationToMap(splitRequest[0], dataBase.get(i)));
                         result.add(dataBase.get(i));
                     }
                 }
-            } else if (request[1].toLowerCase().contains(Constant.OR)) {
+            } else if (splitRequest[1].toLowerCase().contains(Constant.OR)) {
 
-                String[] criterion = paramOperation(request[1].toLowerCase().split(Constant.OR)[0]);
-                String[] criterion2 = paramOperation(request[1].toLowerCase().split(Constant.OR)[1]);
+                String[] criterion = parsingOperation(splitRequest[1].split(Constant.OR)[0]);
+                String[] criterion2 = parsingOperation(splitRequest[1].split(Constant.OR)[1]);
 
                 for (int i = 0; i < dataBase.size(); i++) {
-                    if (filter(criterion, dataBase.get(i)) || filter(criterion2, dataBase.get(i))) {
-                        dataBase.set(i, addInformationToMap(request[0], dataBase.get(i)));
+                    if (logicOperation(criterion, dataBase.get(i)) || logicOperation(criterion2, dataBase.get(i))) {
+                        dataBase.set(i, addInformationToMap(splitRequest[0], dataBase.get(i)));
                         result.add(dataBase.get(i));
                     }
                 }
             } else {
-                String[] criterion = paramOperation(request[1]);
+                String[] criterion = parsingOperation(splitRequest[1]);
+                System.out.println(Arrays.toString(criterion));
                 for (int i = 0; i < dataBase.size(); i++) {
                     System.out.println(Arrays.toString(criterion));
-                    if (filter(criterion, dataBase.get(i))) {
-                        dataBase.set(i, addInformationToMap(request[0], dataBase.get(i)));
+                    if (logicOperation(criterion, dataBase.get(i))) {
+                        dataBase.set(i, addInformationToMap(splitRequest[0], dataBase.get(i)));
                         result.add(dataBase.get(i));
                     }
                 }
             }
         } else {
             for (int i = 0; i < dataBase.size(); i++) {
-                dataBase.set(i, addInformationToMap(sentence, dataBase.get(i)));
+                dataBase.set(i, addInformationToMap(request, dataBase.get(i)));
                 result.add(dataBase.get(i));
             }
         }
@@ -95,101 +102,101 @@ public class JavaSchoolStarter {
     }
 
     /**
-     * Command Select
+     * Метод для выбора строк
      *
-     * @param sentence
+     * @param request
      * @return
      */
-    private List<Map<String, Object>> selectRow(String sentence) {
-        List<Map<String, Object>> result = new ArrayList<>();
-        if (sentence.toLowerCase().contains("where")) {
+    private List<Map<String, Object>> selectRow(String request) {
+        List<Map<String, Object>> responseList = new ArrayList<>();
+        if (request.toLowerCase().contains(Constant.WHERE)) {
 
-            String[] allCriterion = sentence.split("where");
+            String[] allCriterion = request.split(Constant.WHERE);
 
             if (allCriterion[1].toLowerCase().contains(Constant.AND)) {
-                String[] criterion = paramOperation(allCriterion[1].toLowerCase().split(Constant.AND)[0]);
-                String[] criterion2 = paramOperation(allCriterion[1].toLowerCase().split(Constant.AND)[1]);
+                String[] criterion = parsingOperation(allCriterion[1].split(Constant.AND)[0]);
+                String[] criterion2 = parsingOperation(allCriterion[1].split(Constant.AND)[1]);
 
                 for (Map<String, Object> next : dataBase) {
-                    if (filter(criterion, next) && filter(criterion2, next)) {
-                        result.add(next);
+                    if (logicOperation(criterion, next) && logicOperation(criterion2, next)) {
+                        responseList.add(next);
                     }
                 }
             } else if (allCriterion[1].toLowerCase().contains(Constant.OR)) {
-                String[] criterion = paramOperation(allCriterion[1].toLowerCase().split(Constant.OR)[0]);
-                String[] criterion2 = paramOperation(allCriterion[1].toLowerCase().split(Constant.OR)[1]);
+                String[] criterion = parsingOperation(allCriterion[1].split(Constant.OR)[0]);
+                String[] criterion2 = parsingOperation(allCriterion[1].split(Constant.OR)[1]);
 
                 for (Map<String, Object> next : dataBase) {
-                    if (filter(criterion, next) || filter(criterion2, next)) {
-                        result.add(next);
+                    if (logicOperation(criterion, next) || logicOperation(criterion2, next)) {
+                        responseList.add(next);
                     }
                 }
             } else {
-                String[] criterion = paramOperation(allCriterion[1]);
+                String[] criterion = parsingOperation(allCriterion[1]);
 
                 for (Map<String, Object> next : dataBase) {
-                    if (filter(criterion, next)) {
-                        result.add(next);
+                    if (logicOperation(criterion, next)) {
+                        responseList.add(next);
                     }
                 }
             }
         } else {
-            result.addAll(dataBase);
+            responseList.addAll(dataBase);
         }
-        return result;
+        return responseList;
     }
 
     /**
-     * Command Delete
+     * Метод для удаление строк
      *
-     * @param sentence
+     * @param request
      * @return
      */
-    private List<Map<String, Object>> deleteRow(String sentence) {
+    private List<Map<String, Object>> deleteRow(String request) {
         List<Map<String, Object>> result = new ArrayList<>();
-        if (sentence.toLowerCase().contains("where ")) {
+        if (request.toLowerCase().contains(Constant.WHERE)) {
 
-            String[] allCriterion = sentence.split("where");
+            String[] allCriterion = request.split(Constant.WHERE);
 
             if (allCriterion[1].toLowerCase().contains(Constant.AND)) {
-                String[] criterion = paramOperation(allCriterion[1].toLowerCase().split(Constant.AND)[0]);
-                String[] criterion2 = paramOperation(allCriterion[1].toLowerCase().split(Constant.AND)[1]);
+                String[] criterion = parsingOperation(allCriterion[1].split(Constant.AND)[0]);
+                String[] criterion2 = parsingOperation(allCriterion[1].split(Constant.AND)[1]);
                 Iterator<Map<String, Object>> dataBAseIterator = dataBase.iterator();
 
                 while (dataBAseIterator.hasNext()) {
                     Map<String, Object> next = dataBAseIterator.next();
-                    if (filter(criterion, next) && filter(criterion2, next)) {
+                    if (logicOperation(criterion, next) && logicOperation(criterion2, next)) {
                         result.add(next);
                         dataBAseIterator.remove();
                     }
                 }
             } else if (allCriterion[1].toLowerCase().contains(Constant.OR)) {
-                String[] criterion = paramOperation(allCriterion[1].toLowerCase().split(Constant.OR)[0]);
-                String[] criterion2 = paramOperation(allCriterion[1].toLowerCase().split(Constant.OR)[1]);
+                String[] criterion = parsingOperation(allCriterion[1].split(Constant.OR)[0]);
+                String[] criterion2 = parsingOperation(allCriterion[1].split(Constant.OR)[1]);
                 Iterator<Map<String, Object>> dataBAseIterator = dataBase.iterator();
 
                 while (dataBAseIterator.hasNext()) {
                     Map<String, Object> next = dataBAseIterator.next();
 
-                    if (filter(criterion, next) || filter(criterion2, next)) {
+                    if (logicOperation(criterion, next) || logicOperation(criterion2, next)) {
                         result.add(next);
                         dataBAseIterator.remove();
                     }
                 }
             } else {
-                String[] criterion = paramOperation(allCriterion[1]);
+                String[] criterion = parsingOperation(allCriterion[1]);
                 Iterator<Map<String, Object>> dataBAseIterator = dataBase.iterator();
 
                 while (dataBAseIterator.hasNext()) {
                     Map<String, Object> next = dataBAseIterator.next();
 
-                    if (filter(criterion, next)) {
+                    if (logicOperation(criterion, next)) {
                         result.add(next);
                         dataBAseIterator.remove();
                     }
                 }
             }
-        } else if (!(sentence.toLowerCase().contains("where"))) {
+        } else if (!(request.toLowerCase().contains(Constant.WHERE))) {
             Iterator<Map<String, Object>> dataBaseIterator = dataBase.iterator();
             while (dataBaseIterator.hasNext()) {
                 Map<String, Object> next = dataBaseIterator.next();
@@ -202,10 +209,21 @@ public class JavaSchoolStarter {
         return result;
     }
 
+    /**
+     * Метод для удаления лишних символов из значений
+     * @param word
+     * @return
+     */
     private String clearWord(String word) {
         return word.substring(word.indexOf("=") + 1).replaceAll("'| ", "");
     }
 
+    /**
+     * Метод для добавления или обновления данных во входящей Map
+     * @param informationToAdd
+     * @param row
+     * @return
+     */
     private Map<String, Object> addInformationToMap(String informationToAdd, Map<String, Object> row) {
         for (String str : informationToAdd.split(",")) {
             if (str.toLowerCase().contains(Constant.ID)) {
@@ -231,28 +249,49 @@ public class JavaSchoolStarter {
         return row;
     }
 
-    private String[] paramOperation(String operation) {
-        String[] data = new String[3];
-        Matcher matcher = Constant.OPERATION.matcher(operation.replaceAll("'| ", ""));
-        if (matcher.find()) {
-            for (int i = 0; i < 3; i++) {
-                data[i] = matcher.group(i + 1);
-            }
-            data[0]= data[0].toLowerCase();
+    /**
+     * Метод для парсинга из String условий для логического сравнения
+     * @param operation
+     * @return
+     */
+    private String[] parsingOperation(String operation) {
+        String[] dataArray = new String[3];
+        operation = operation.replaceAll("'| ", "");
+
+        if (operation.toLowerCase().contains(Constant.I_LIKE)) {
+            dataArray[0] = operation.split("ilike")[0].toLowerCase();
+            dataArray[1] = Constant.I_LIKE;
+            dataArray[2] = operation.split("ilike")[1];
+
+        } else if (operation.contains(Constant.LIKE)) {
+            dataArray[0] = operation.split("like")[0].toLowerCase();
+            dataArray[1] = Constant.LIKE;
+            dataArray[2] = operation.split("like")[1];
+
         } else {
-            throw new RuntimeException("Некорретный запрос");
+
+            Matcher matcher = Constant.OPERATION.matcher(operation);
+            if (matcher.find()) {
+                for (int i = 0; i < 3; i++) {
+                    dataArray[i] = matcher.group(i + 1);
+                }
+                dataArray[0] = dataArray[0].toLowerCase();
+            } else {
+                throw new RuntimeException("Некорретная операция сравнения");
+            }
         }
-        return data;
+        return dataArray;
     }
 
     /**
-     * Filter logic command
+     * Метод для обработки логических сравнений
      *
      * @param criterion
      * @param maps
      * @return
      */
-    private boolean filter(String[] criterion, Map<String, Object> maps) {
+    private boolean logicOperation(String[] criterion, Map<String, Object> maps) {
+        System.out.println(Arrays.toString(criterion));
         switch (criterion[1]) {
             case "=" -> {
                 return isEquals(criterion, maps);
@@ -280,11 +319,17 @@ public class JavaSchoolStarter {
             case ">" -> {
                 return more(criterion, maps);
             }
-            default -> throw new RuntimeException("Некоректный запрос");
+            default -> throw new RuntimeException("Некорретный оператор сравнения");
         }
     }
 
-    private static boolean isEquals(String[] operation, Map<String, Object> map) {
+    /**
+     * Метод для обработки операции =
+     * @param operation
+     * @param map
+     * @return
+     */
+        private static boolean isEquals(String[] operation, Map<String, Object> map) {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
                 if (map.get(operation[0]) == null) {
@@ -295,21 +340,33 @@ public class JavaSchoolStarter {
             case Constant.LAST_NAME -> {
                 if (map.get(operation[0]) == null) {
                     return false;
-                } else {
-                    return operation[2].equals(map.get(operation[0]).toString());
                 }
+                return operation[2].equals(map.get(operation[0]).toString());
             }
             case Constant.COST -> {
+                if (map.get(operation[0]) == null) {
+                    return false;
+                }
                 return Double.valueOf(operation[2]).equals(Double.valueOf(map.get(operation[0]).toString()));
             }
             case Constant.ACTIVE -> {
+                if (map.get(operation[0]) == null) {
+                    return false;
+                }
                 return Boolean.valueOf(operation[2]).equals(Boolean.valueOf(map.get(operation[0]).toString()));
             }
-            default -> throw new RuntimeException("Некоректный запрос");
+            default -> throw new RuntimeException("Некорректный запрос на операцию =");
 
         }
     }
 
+    /**
+     * Метод для обработки операции !=
+     * @param operation
+     * @param map
+     * @return
+     */
+    //добавить проверку на нуль!!!
     private static boolean isNotEquals(String[] operation, Map<String, Object> map) {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
@@ -336,32 +393,71 @@ public class JavaSchoolStarter {
                 }
                 return !(Boolean.valueOf(operation[2]).equals(Boolean.valueOf(map.get(operation[0]).toString())));
             }
-            default -> throw new RuntimeException("Некоректный запрос");
+            default -> throw new RuntimeException("Некорректный запрос на операцию !=");
         }
     }
 
+    /**
+     * Метод для обработки операции Like
+     * @param operation
+     * @param map
+     * @return
+     */
     private static boolean like(String[] operation, Map<String, Object> map) {
-        if (operation[0].equals(Constant.LAST_NAME)) {
+        if (operation[0].equalsIgnoreCase(Constant.LAST_NAME)) {
+
             if (map.get(operation[0]) == null) {
                 return false;
+            } else if (operation[2].matches("%([\\w]+)%")) {
+                return map.get(operation[0]).toString().contains(operation[2].replaceAll("%", ""));
+            } else if (operation[2].matches("%([\\w]+)")) {
+                System.out.println("3");
+                return map.get(operation[0]).toString().endsWith(operation[2].replaceAll("%", ""));
+            } else if (operation[2].matches("([\\w]+)%")) {
+                System.out.println("4");
+                return map.get(operation[0]).toString().startsWith(operation[2].replaceAll("%", ""));
+            } else {
+                System.out.println("5");
+                return operation[2].equals(map.get(operation[0]).toString());
             }
-            return operation[2].equals(map.get(operation[0]).toString());
+
         } else {
-            throw new RuntimeException("Некоректный запрос");
+            throw new RuntimeException("Некорректный запрос на операцию like");
         }
     }
 
+    /**
+     * Метод для обработки операции ILike
+     * @param operation
+     * @param map
+     * @return
+     */
     private static boolean iLike(String[] operation, Map<String, Object> map) {
-        if (operation[0].equals(Constant.LAST_NAME)) {
+        if (operation[0].equalsIgnoreCase(Constant.LAST_NAME)) {
+            operation[2] = operation[2].toLowerCase();
             if (map.get(operation[0]) == null) {
                 return false;
+            } else if (operation[2].matches("%([\\w]+)%")) {
+                return map.get(operation[0]).toString().toLowerCase().contains(operation[2].replaceAll("%", ""));
+            } else if (operation[2].matches("%([\\w]+)")) {
+                return map.get(operation[0]).toString().toLowerCase().endsWith(operation[2].replaceAll("%", ""));
+            } else if (operation[2].matches("([\\w]+)%")) {
+                return map.get(operation[0]).toString().toLowerCase().startsWith(operation[2].replaceAll("%", ""));
+            } else {
+                return operation[2].equalsIgnoreCase(map.get(operation[0]).toString());
             }
-            return operation[2].equalsIgnoreCase(map.get(operation[0]).toString());
+
         } else {
-            throw new RuntimeException("Некоректный запрос");
+            throw new RuntimeException("Некорректный запрос на операцию ilike");
         }
     }
 
+    /**
+     * Метод для обработки операции >=
+     * @param operation
+     * @param map
+     * @return
+     */
     private static boolean greaterThanOrEqual(String[] operation, Map<String, Object> map) {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
@@ -376,10 +472,16 @@ public class JavaSchoolStarter {
                 }
                 return Double.parseDouble(operation[2]) <= Double.parseDouble(map.get(operation[0]).toString());
             }
-            default -> throw new RuntimeException("Некоректный запрос");
+            default -> throw new RuntimeException("Некорректный запрос на операцию >=");
         }
     }
 
+    /**
+     * Метод для обработки операции <=
+     * @param operation
+     * @param map
+     * @return
+     */
     private static boolean lessThanOrEqual(String[] operation, Map<String, Object> map) {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
@@ -394,10 +496,16 @@ public class JavaSchoolStarter {
                 }
                 return Double.parseDouble(operation[2]) >= Double.parseDouble(map.get(operation[0]).toString());
             }
-            default -> throw new RuntimeException("Некоректный запрос");
+            default -> throw new RuntimeException("Некорректный запрос на операцию <=");
         }
     }
 
+    /**
+     * Метод для обработки операции <
+     * @param operation
+     * @param map
+     * @return
+     */
     private static boolean less(String[] operation, Map<String, Object> map) {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
@@ -409,10 +517,16 @@ public class JavaSchoolStarter {
                 }
                 return Double.parseDouble(operation[2]) > Double.parseDouble(map.get(operation[0]).toString());
             }
-            default -> throw new RuntimeException("Некоректный запрос");
+            default -> throw new RuntimeException("Некорректный запрос на операцию <");
         }
     }
 
+    /**
+     * Метод для обработки операции >
+     * @param operation
+     * @param map
+     * @return
+     */
     private static boolean more(String[] operation, Map<String, Object> map) {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
@@ -427,7 +541,7 @@ public class JavaSchoolStarter {
                 }
                 return Double.parseDouble(operation[2]) < Double.parseDouble(map.get(operation[0]).toString());
             }
-            default -> throw new RuntimeException("Некоректный запрос");
+            default -> throw new RuntimeException("Некорректный запрос на операцию >");
         }
     }
 }
