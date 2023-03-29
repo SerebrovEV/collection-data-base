@@ -16,6 +16,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки входных данных и выводе результата
+     *
      * @param request
      * @return
      * @throws Exception
@@ -82,9 +83,7 @@ public class JavaSchoolStarter {
                 }
             } else {
                 String[] criterion = parsingOperation(splitRequest[1]);
-                System.out.println(Arrays.toString(criterion));
                 for (int i = 0; i < dataBase.size(); i++) {
-                    System.out.println(Arrays.toString(criterion));
                     if (logicOperation(criterion, dataBase.get(i))) {
                         dataBase.set(i, addInformationToMap(splitRequest[0], dataBase.get(i)));
                         result.add(dataBase.get(i));
@@ -211,6 +210,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для удаления лишних символов из значений
+     *
      * @param word
      * @return
      */
@@ -220,6 +220,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для добавления или обновления данных во входящей Map
+     *
      * @param informationToAdd
      * @param row
      * @return
@@ -227,23 +228,43 @@ public class JavaSchoolStarter {
     private Map<String, Object> addInformationToMap(String informationToAdd, Map<String, Object> row) {
         for (String str : informationToAdd.split(",")) {
             if (str.toLowerCase().contains(Constant.ID)) {
-                row.put(Constant.ID, Long.valueOf(clearWord(str)));
+                if (clearWord(str).equals("null")) {
+                    row.remove(Constant.ID);
+                } else {
+                    row.put(Constant.ID, Long.valueOf(clearWord(str)));
+                }
                 continue;
             }
             if (str.toLowerCase().contains(Constant.LAST_NAME)) {
-                row.put(Constant.LAST_NAME, clearWord(str));
+                if (clearWord(str).equals("null")) {
+                    row.remove(Constant.LAST_NAME);
+                } else {
+                    row.put(Constant.LAST_NAME, clearWord(str));
+                }
                 continue;
             }
             if (str.toLowerCase().contains(Constant.AGE)) {
-                row.put(Constant.AGE, Long.valueOf(clearWord(str)));
+                if (clearWord(str).equals("null")) {
+                    row.remove(Constant.AGE);
+                } else {
+                    row.put(Constant.AGE, Long.valueOf(clearWord(str)));
+                }
                 continue;
             }
             if (str.toLowerCase().contains(Constant.COST)) {
-                row.put(Constant.COST, Double.valueOf(clearWord(str)));
+                if (clearWord(str).equals("null")) {
+                    row.remove(Constant.COST);
+                } else {
+                    row.put(Constant.COST, Double.valueOf(clearWord(str)));
+                }
                 continue;
             }
             if (str.toLowerCase().contains(Constant.ACTIVE)) {
-                row.put(Constant.ACTIVE, Boolean.valueOf(clearWord(str)));
+                if (clearWord(str).equals("null")) {
+                    row.remove(Constant.ACTIVE);
+                } else {
+                    row.put(Constant.ACTIVE, Boolean.valueOf(clearWord(str)));
+                }
             } else throw new RuntimeException("Некорректный запрос");
         }
         return row;
@@ -251,6 +272,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для парсинга из String условий для логического сравнения
+     *
      * @param operation
      * @return
      */
@@ -291,7 +313,6 @@ public class JavaSchoolStarter {
      * @return
      */
     private boolean logicOperation(String[] criterion, Map<String, Object> maps) {
-        System.out.println(Arrays.toString(criterion));
         switch (criterion[1]) {
             case "=" -> {
                 return isEquals(criterion, maps);
@@ -325,11 +346,12 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки операции =
+     *
      * @param operation
      * @param map
      * @return
      */
-        private static boolean isEquals(String[] operation, Map<String, Object> map) {
+    private static boolean isEquals(String[] operation, Map<String, Object> map) {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
                 if (map.get(operation[0]) == null) {
@@ -362,6 +384,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки операции !=
+     *
      * @param operation
      * @param map
      * @return
@@ -371,25 +394,25 @@ public class JavaSchoolStarter {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
                 if (map.get(operation[0]) == null) {
-                    return false;
+                    return Long.valueOf(operation[2]).equals(Long.valueOf("0"));
                 }
                 return !(Long.valueOf(operation[2]).equals(Long.valueOf(map.get(operation[0]).toString())));
             }
             case Constant.LAST_NAME -> {
                 if (map.get(operation[0]) == null) {
-                    return false;
+                    return operation[2].equals("0");
                 }
                 return !(operation[2].equals(map.get(operation[0]).toString()));
             }
             case Constant.COST -> {
                 if (map.get(operation[0]) == null) {
-                    return false;
+                    return Double.valueOf(operation[2]).equals(Double.valueOf("0"));
                 }
                 return !(Double.valueOf(operation[2]).equals(Double.valueOf(map.get(operation[0]).toString())));
             }
             case Constant.ACTIVE -> {
                 if (map.get(operation[0]) == null) {
-                    return false;
+                    return Boolean.valueOf(operation[2]).equals(Boolean.valueOf("false"));
                 }
                 return !(Boolean.valueOf(operation[2]).equals(Boolean.valueOf(map.get(operation[0]).toString())));
             }
@@ -399,6 +422,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки операции Like
+     *
      * @param operation
      * @param map
      * @return
@@ -411,13 +435,10 @@ public class JavaSchoolStarter {
             } else if (operation[2].matches("%([\\w]+)%")) {
                 return map.get(operation[0]).toString().contains(operation[2].replaceAll("%", ""));
             } else if (operation[2].matches("%([\\w]+)")) {
-                System.out.println("3");
                 return map.get(operation[0]).toString().endsWith(operation[2].replaceAll("%", ""));
             } else if (operation[2].matches("([\\w]+)%")) {
-                System.out.println("4");
                 return map.get(operation[0]).toString().startsWith(operation[2].replaceAll("%", ""));
             } else {
-                System.out.println("5");
                 return operation[2].equals(map.get(operation[0]).toString());
             }
 
@@ -428,6 +449,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки операции ILike
+     *
      * @param operation
      * @param map
      * @return
@@ -454,6 +476,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки операции >=
+     *
      * @param operation
      * @param map
      * @return
@@ -478,6 +501,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки операции <=
+     *
      * @param operation
      * @param map
      * @return
@@ -502,6 +526,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки операции <
+     *
      * @param operation
      * @param map
      * @return
@@ -509,6 +534,9 @@ public class JavaSchoolStarter {
     private static boolean less(String[] operation, Map<String, Object> map) {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
+                if (map.get(operation[0]) == null) {
+                    return false;
+                }
                 return Long.parseLong(operation[2]) > (Long.parseLong(map.get(operation[0]).toString()));
             }
             case Constant.COST -> {
@@ -523,6 +551,7 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки операции >
+     *
      * @param operation
      * @param map
      * @return
