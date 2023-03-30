@@ -10,15 +10,14 @@ public class JavaSchoolStarter {
     }
 
     /**
-     * Коллекция с веддеными данными
+     * Коллекция с данными
      */
     private final ArrayList<Map<String, Object>> dataBase = new ArrayList<>();
 
     /**
      * Метод для обработки входных данных и выводе результата
-     *
-     * @param request
-     * @return
+     * @param request Команда на обработку
+     * @return Результат выполнения метода
      * @throws Exception
      */
     public List<Map<String, Object>> execute(String request) throws Exception {
@@ -37,11 +36,10 @@ public class JavaSchoolStarter {
 
     /**
      * Метод на добавление строки
-     *
-     * @param
-     * @return
+     * @param request Команда с данными на добвавление в строку
+     * @return Добавленая строка в List
      */
-    private List<Map<String, Object>> addRow(String request) {
+    private List<Map<String, Object>> addRow(String request) throws Exception {
         Map<String, Object> newRow = addInformationToMap(request, new HashMap<>());
         dataBase.add(newRow);
         return List.of(newRow);
@@ -49,11 +47,10 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обновления данных в строках
-     *
-     * @param request
-     * @return
+     * @param request Команда с данными на обновление строк
+     * @return List изменненых строк с новыми данными
      */
-    private List<Map<String, Object>> updateRow(String request) {
+    private List<Map<String, Object>> updateRow(String request) throws Exception {
         List<Map<String, Object>> result = new ArrayList<>();
         if (request.toLowerCase().contains(Constant.WHERE)) {
 
@@ -102,11 +99,10 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для выбора строк
-     *
-     * @param request
-     * @return
+     * @param request Команда с данными на пролучение определенных строк
+     * @return List строк с необходимыми данными
      */
-    private List<Map<String, Object>> selectRow(String request) {
+    private List<Map<String, Object>> selectRow(String request) throws Exception {
         List<Map<String, Object>> responseList = new ArrayList<>();
         if (request.toLowerCase().contains(Constant.WHERE)) {
 
@@ -147,11 +143,11 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для удаление строк
-     *
-     * @param request
-     * @return
+     * @param request Команда с данными на удаление строк
+     * @return List удалленых строк
+     * @exception Exception Некорректный запрос с использованием WHERE
      */
-    private List<Map<String, Object>> deleteRow(String request) {
+    private List<Map<String, Object>> deleteRow(String request) throws Exception {
         List<Map<String, Object>> result = new ArrayList<>();
         if (request.toLowerCase().contains(Constant.WHERE)) {
 
@@ -203,16 +199,15 @@ public class JavaSchoolStarter {
                 dataBaseIterator.remove();
             }
         } else {
-            throw new RuntimeException("Некорректная команда на удаление с использование WHERE");
+            throw new Exception("Некорректная команда на удаление с использование WHERE");
         }
         return result;
     }
 
     /**
      * Метод для удаления лишних символов из значений
-     *
-     * @param word
-     * @return
+     * @param word Столбец со значением
+     * @return Значение
      */
     private String clearWord(String word) {
         return word.substring(word.indexOf("=") + 1).replaceAll("'| ", "");
@@ -220,12 +215,12 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для добавления или обновления данных во входящей Map
-     *
-     * @param informationToAdd
-     * @param row
-     * @return
+     * @param informationToAdd Столбец со значеним
+     * @param row Строка для добавления/обновления данных
+     * @return Строка с новыми данными
+     * @exception Exception Некорректный запрос с наименованием столбца в строке
      */
-    private Map<String, Object> addInformationToMap(String informationToAdd, Map<String, Object> row) {
+    private Map<String, Object> addInformationToMap(String informationToAdd, Map<String, Object> row) throws Exception {
         for (String str : informationToAdd.split(",")) {
             if (str.toLowerCase().contains(Constant.ID)) {
                 if (clearWord(str).equals("null")) {
@@ -265,18 +260,18 @@ public class JavaSchoolStarter {
                 } else {
                     row.put(Constant.ACTIVE, Boolean.valueOf(clearWord(str)));
                 }
-            } else throw new RuntimeException("Некорректный запрос");
+            } else throw new Exception("Некорректный запрос");
         }
         return row;
     }
 
     /**
      * Метод для парсинга из String условий для логического сравнения
-     *
-     * @param operation
-     * @return
+     * @param operation Условие логического сравнения в String
+     * @return Массив с названием колонки, логическим оператором и значением
+     * @exception Exception Некорректный операция сравнения
      */
-    private String[] parsingOperation(String operation) {
+    private String[] parsingOperation(String operation) throws Exception {
         String[] dataArray = new String[3];
         operation = operation.replaceAll("'| ", "");
 
@@ -299,7 +294,7 @@ public class JavaSchoolStarter {
                 }
                 dataArray[0] = dataArray[0].toLowerCase();
             } else {
-                throw new RuntimeException("Некорретная операция сравнения");
+                throw new Exception("Некорретная операция сравнения");
             }
         }
         return dataArray;
@@ -307,12 +302,12 @@ public class JavaSchoolStarter {
 
     /**
      * Метод для обработки логических сравнений
-     *
-     * @param criterion
-     * @param maps
-     * @return
+     * @param criterion Массив с названием колонки, логическим оператором и значением
+     * @param maps Строка для обработки логических сравнений
+     * @return Соответвие строки логическому сравнению
+     * @exception Exception Некорректный оператор сравнения
      */
-    private boolean logicOperation(String[] criterion, Map<String, Object> maps) {
+    private boolean logicOperation(String[] criterion, Map<String, Object> maps) throws Exception {
         switch (criterion[1]) {
             case "=" -> {
                 return isEquals(criterion, maps);
@@ -340,18 +335,18 @@ public class JavaSchoolStarter {
             case ">" -> {
                 return more(criterion, maps);
             }
-            default -> throw new RuntimeException("Некорретный оператор сравнения");
+            default -> throw new Exception("Некорретный оператор сравнения");
         }
     }
 
     /**
      * Метод для обработки операции =
-     *
-     * @param operation
-     * @param map
-     * @return
+     * @param operation Массив с названием колонки, операцией сравнения и значением для сравнения
+     * @param map Строка для обработки логического сравнения
+     * @return Соответвие строки логическому сравнению
+     * @exception Exception Некорректный запрос на операцию сравнения
      */
-    private static boolean isEquals(String[] operation, Map<String, Object> map) {
+    private static boolean isEquals(String[] operation, Map<String, Object> map) throws Exception {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
                 if (map.get(operation[0]) == null) {
@@ -377,20 +372,20 @@ public class JavaSchoolStarter {
                 }
                 return Boolean.valueOf(operation[2]).equals(Boolean.valueOf(map.get(operation[0]).toString()));
             }
-            default -> throw new RuntimeException("Некорректный запрос на операцию =");
+            default -> throw new Exception("Некорректный запрос на операцию =");
 
         }
     }
 
     /**
      * Метод для обработки операции !=
-     *
-     * @param operation
-     * @param map
-     * @return
+     * @param operation Массив с названием колонки, операцией сравнения и значением для сравнения
+     * @param map Строка для обработки логического сравнения
+     * @return Соответвие строки логическому сравнению
+     * @exception Exception Некорректный запрос на операцию сравнения
      */
     //добавить проверку на нуль!!!
-    private static boolean isNotEquals(String[] operation, Map<String, Object> map) {
+    private static boolean isNotEquals(String[] operation, Map<String, Object> map) throws Exception {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
                 if (map.get(operation[0]) == null) {
@@ -416,18 +411,18 @@ public class JavaSchoolStarter {
                 }
                 return !(Boolean.valueOf(operation[2]).equals(Boolean.valueOf(map.get(operation[0]).toString())));
             }
-            default -> throw new RuntimeException("Некорректный запрос на операцию !=");
+            default -> throw new Exception("Некорректный запрос на операцию !=");
         }
     }
 
     /**
      * Метод для обработки операции Like
-     *
-     * @param operation
-     * @param map
-     * @return
+     * @param operation Массив с названием колонки, операцией сравнения и значением для сравнения
+     * @param map Строка для обработки логического сравнения
+     * @return Соответвие строки логическому сравнению
+     * @exception Exception Некорректный запрос на операцию сравнения
      */
-    private static boolean like(String[] operation, Map<String, Object> map) {
+    private static boolean like(String[] operation, Map<String, Object> map) throws Exception {
         if (operation[0].equalsIgnoreCase(Constant.LAST_NAME)) {
 
             if (map.get(operation[0]) == null) {
@@ -443,18 +438,18 @@ public class JavaSchoolStarter {
             }
 
         } else {
-            throw new RuntimeException("Некорректный запрос на операцию like");
+            throw new Exception("Некорректный запрос на операцию like");
         }
     }
 
     /**
      * Метод для обработки операции ILike
-     *
-     * @param operation
-     * @param map
-     * @return
+     * @param operation Массив с названием колонки, операцией сравнения и значением для сравнения
+     * @param map Строка для обработки логического сравнения
+     * @return Соответвие строки логическому сравнению
+     * @exception Exception Некорректный запрос на операцию сравнения
      */
-    private static boolean iLike(String[] operation, Map<String, Object> map) {
+    private static boolean iLike(String[] operation, Map<String, Object> map) throws Exception {
         if (operation[0].equalsIgnoreCase(Constant.LAST_NAME)) {
             operation[2] = operation[2].toLowerCase();
             if (map.get(operation[0]) == null) {
@@ -470,18 +465,18 @@ public class JavaSchoolStarter {
             }
 
         } else {
-            throw new RuntimeException("Некорректный запрос на операцию ilike");
+            throw new Exception("Некорректный запрос на операцию ilike");
         }
     }
 
     /**
      * Метод для обработки операции >=
-     *
-     * @param operation
-     * @param map
-     * @return
+     * @param operation Массив с названием колонки, операцией сравнения и значением для сравнения
+     * @param map Строка для обработки логического сравнения
+     * @return Соответвие строки логическому сравнению
+     * @exception Exception Некорректный запрос на операцию сравнения
      */
-    private static boolean greaterThanOrEqual(String[] operation, Map<String, Object> map) {
+    private static boolean greaterThanOrEqual(String[] operation, Map<String, Object> map) throws Exception {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
                 if (map.get(operation[0]) == null) {
@@ -495,18 +490,18 @@ public class JavaSchoolStarter {
                 }
                 return Double.parseDouble(operation[2]) <= Double.parseDouble(map.get(operation[0]).toString());
             }
-            default -> throw new RuntimeException("Некорректный запрос на операцию >=");
+            default -> throw new Exception("Некорректный запрос на операцию >=");
         }
     }
 
     /**
      * Метод для обработки операции <=
-     *
-     * @param operation
-     * @param map
-     * @return
+     * @param operation Массив с названием колонки, операцией сравнения и значением для сравнения
+     * @param map Строка для обработки логического сравнения
+     * @return Соответвие строки логическому сравнению
+     * @exception Exception Некорректный запрос на операцию сравнения
      */
-    private static boolean lessThanOrEqual(String[] operation, Map<String, Object> map) {
+    private static boolean lessThanOrEqual(String[] operation, Map<String, Object> map) throws Exception {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
                 if (map.get(operation[0]) == null) {
@@ -520,18 +515,18 @@ public class JavaSchoolStarter {
                 }
                 return Double.parseDouble(operation[2]) >= Double.parseDouble(map.get(operation[0]).toString());
             }
-            default -> throw new RuntimeException("Некорректный запрос на операцию <=");
+            default -> throw new Exception("Некорректный запрос на операцию <=");
         }
     }
 
     /**
      * Метод для обработки операции <
-     *
-     * @param operation
-     * @param map
-     * @return
+     * @param operation Массив с названием колонки, операцией сравнения и значением для сравнения
+     * @param map Строка для обработки логического сравнения
+     * @return Соответвие строки логическому сравнению
+     * @exception Exception Некорректный запрос на операцию сравнения
      */
-    private static boolean less(String[] operation, Map<String, Object> map) {
+    private static boolean less(String[] operation, Map<String, Object> map) throws Exception {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
                 if (map.get(operation[0]) == null) {
@@ -545,18 +540,18 @@ public class JavaSchoolStarter {
                 }
                 return Double.parseDouble(operation[2]) > Double.parseDouble(map.get(operation[0]).toString());
             }
-            default -> throw new RuntimeException("Некорректный запрос на операцию <");
+            default -> throw new Exception("Некорректный запрос на операцию <");
         }
     }
 
     /**
      * Метод для обработки операции >
-     *
-     * @param operation
-     * @param map
-     * @return
+     * @param operation Массив с названием колонки, операцией сравнения и значением для сравнения
+     * @param map Строка для обработки логического сравнения
+     * @return Соответвие строки логическому сравнению
+     * @exception Exception Некорректный запрос на операцию сравнения
      */
-    private static boolean more(String[] operation, Map<String, Object> map) {
+    private static boolean more(String[] operation, Map<String, Object> map) throws Exception {
         switch (operation[0]) {
             case Constant.ID, Constant.AGE -> {
                 if (map.get(operation[0]) == null) {
@@ -570,7 +565,7 @@ public class JavaSchoolStarter {
                 }
                 return Double.parseDouble(operation[2]) < Double.parseDouble(map.get(operation[0]).toString());
             }
-            default -> throw new RuntimeException("Некорректный запрос на операцию >");
+            default -> throw new Exception("Некорректный запрос на операцию >");
         }
     }
 }
